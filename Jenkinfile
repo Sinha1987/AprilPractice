@@ -1,0 +1,48 @@
+pipeline {
+    agent any   // Run on any available Jenkins agent
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                echo "git branch:main', url:https://github.com/your-repo/project.git"
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Building the application..."
+                echo "sh 'mvn clean package'   // Example: Maven build"
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo "Running tests..."
+                echo "sh 'mvn test"
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker image..."
+                echo "sh 'docker build -t myapp:latest ."
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo "Deploying to server..."
+                echo "sh 'docker run -d -p 8080:8080 myapp:latest"
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Pipeline executed successfully!"
+        }
+        failure {
+            echo "❌ Pipeline failed. Check logs!"
+        }
+    }
+}
