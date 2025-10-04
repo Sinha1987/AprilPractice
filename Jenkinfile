@@ -1,48 +1,32 @@
 pipeline {
-    agent any   // Run on any available Jenkins agent
+    agent any
 
-    stages {
-        stage('Checkout Code') {
-            steps {
-                echo "git branch:main', url:https://github.com/your-repo/project.git"
-            }
-        }
-
-        stage('Build') {
-            steps {
-                echo "Building the application..."
-                echo "sh 'mvn clean package'   // Example: Maven build"
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo "Running tests..."
-                echo "sh 'mvn test"
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                echo "Building Docker image..."
-                echo "sh 'docker build -t myapp:latest ."
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo "Deploying to server..."
-                echo "sh 'docker run -d -p 8080:8080 myapp:latest"
-            }
-        }
+    tools {
+        // Install the Maven version configured as "M3" and add it to the path.
+        maven "M3"
     }
 
-    post {
-        success {
-            echo "✅ Pipeline executed successfully!"
-        }
-        failure {
-            echo "❌ Pipeline failed. Check logs!"
+    stages {
+        stage('Build') {
+            steps {
+                // Get some code from a GitHub repository
+                git 'https://github.com/jglick/simple-maven-project-with-tests.git'
+
+                // Run Maven on a Unix agent.
+                sh "mvn -Dmaven.test.failure.ignore=true clean package"
+
+                // To run Maven on a Windows agent, use
+                // bat "mvn -Dmaven.test.failure.ignore=true clean package"
+            }
+
+            post {
+                // If Maven was able to run the tests, even if some of the test
+                // failed, record the test results and archive the jar file.
+                success {
+                    junit '**/target/surefire-reports/TEST-*.xml'
+                    archiveArtifacts 'target/*.jar'
+                }
+            }
         }
     }
 }
